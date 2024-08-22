@@ -7,7 +7,7 @@ import { mainRouter } from './router/mainRouter.js'
 
 const app = express()
 const corsOptions = {
-  origin: 'localhost:3000',
+  origin: true,
   optionsSuccessStatus: 200,
   credentials: true,
 }
@@ -24,6 +24,7 @@ app.use(cors(corsOptions))
 app.use('/api', mainRouter)
 
 const port = process.env.PORT || 3333
+
 const server = app.listen(port, () => {
   console.log(`Listening at http://localhost:${port}/api`)
 })
