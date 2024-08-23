@@ -160,6 +160,6 @@ export const getUserById = async (req, res) => {
       id: String(userId),
     },
   })
-  const { password:_, ...userWithoutPassword } = user 
+  const { password: _, ...userWithoutPassword } = user
   return res.json({ status: 200, data: userWithoutPassword })
 }
