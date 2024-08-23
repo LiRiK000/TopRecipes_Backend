@@ -63,6 +63,8 @@ export const createUser = async (req, res) => {
     return res
       .status(500)
       .json(new ApiResponse(false, 500, null, 'Internal Server Error'))
+  } finally {
+    prisma.$disconnect()
   }
 }
 export const loginUser = async (req, res) => {
@@ -127,6 +129,8 @@ export const loginUser = async (req, res) => {
     return res
       .status(500)
       .json(new ApiResponse(false, 500, null, 'Internal Server Error'))
+  } finally {
+    prisma.$disconnect()
   }
 }
 export const logoutUser = (req, res) => {
@@ -151,8 +155,49 @@ export const logoutUser = (req, res) => {
     return res
       .status(500)
       .json(new ApiResponse(false, 500, null, 'Internal Server Error'))
+  } finally {
+    prisma.$disconnect()
   }
 }
+
+export const deleteUser = async (req, res) => {
+  try {
+    if (req.user) {
+      const user = await prisma.user.findUnique({
+        where: {
+          id: req.user.id,
+        },
+      })
+      if (user) {
+        const deleteUser = await prisma.user.delete({
+          where: {
+            id: user.id,
+          },
+        })
+        const { password: _, ...userWithoutPassword } = deleteUser
+        return res
+          .status(200)
+          .json(
+            new ApiResponse(
+              true,
+              200,
+              userWithoutPassword,
+              'User has been deleted',
+            ),
+          )
+      }
+    }
+  } catch (error) {
+    console.error(error)
+    return res
+      .status(500)
+      .json(new ApiResponse(false, 500, null, 'Internal Server Error'))
+  } finally {
+    prisma.$disconnect()
+  }
+  return res.status(404).json(new ApiResponse(false, 404, {}, 'User not found'))
+}
+
 export const getUserById = async (req, res) => {
   const userId = req.params.id
   const user = await prisma.user.findFirst({
@@ -160,6 +205,11 @@ export const getUserById = async (req, res) => {
       id: String(userId),
     },
   })
-  const { password: _, ...userWithoutPassword } = user
-  return res.json({ status: 200, data: userWithoutPassword })
+  if (user) {
+    const { password: _, ...userWithoutPassword } = user
+    return res
+      .status(200)
+      .json(new ApiResponse(true, 200, userWithoutPassword, 'User found'))
+  }
+  return res.status(404).json(new ApiResponse(false, 404, {}, 'User not found'))
 }

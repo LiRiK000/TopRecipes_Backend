@@ -1,5 +1,6 @@
 import {
   createUser,
+  deleteUser,
   getUserById,
   loginUser,
   logoutUser,
@@ -12,7 +13,8 @@ const userRouter = express.Router()
 
 userRouter.post('/create', createUser)
 userRouter.post('/login', loginUser)
-userRouter.post('/logout', verifyJWT, logoutUser)
 userRouter.get('/:id', getUserById)
+userRouter.post('/logout', verifyJWT, logoutUser)
+userRouter.delete('/delete', verifyJWT, deleteUser)
 
 export { userRouter }
