@@ -4,6 +4,7 @@ import cookieParser from 'cookie-parser'
 import cors from 'cors'
 import express from 'express'
 import { mainRouter } from './router/mainRouter.js'
+import path from 'path'
 
 const app = express()
 const corsOptions = {
@@ -16,8 +17,7 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(cookieParser())
 
-// FIXME
-// app.use('/assets', express.static(path.join(__dirname, 'assets')));
+app.use('/assets', express.static(path.join('./assets')))
 
 app.use(cors(corsOptions))
 

@@ -4,6 +4,7 @@ import { ApiResponse } from '../utils/ApiResponse.js'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { prisma } from '../config/db/prisma.js'
+import { validateJWT } from '../middleware/validateJWT.js'
 
 export const createUser = async (req, res) => {
   const { name, email, password } = req.body
@@ -100,7 +101,7 @@ export const loginUser = async (req, res) => {
 
     const accessToken = jwt.sign(
       { userId: user.id, email: user.email },
-      process.env.JWT_SECRET || '',
+      process.env.JWT_SECRET,
       {
         expiresIn: '1d',
       },
@@ -196,6 +197,43 @@ export const deleteUser = async (req, res) => {
     prisma.$disconnect()
   }
   return res.status(404).json(new ApiResponse(false, 404, {}, 'User not found'))
+}
+
+export const checkAuth = async (req, res) => {
+  try {
+    const token = req.cookies?.accessToken
+
+    const decodedToken = validateJWT(token)
+
+    if (!decodedToken) {
+      return res
+        .status(401)
+        .json(new ApiResponse(false, 401, null, 'Unauthorized request'))
+    }
+
+    const user = await prisma.user.findUnique({
+      where: {
+        id: decodedToken.userId,
+      },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+      },
+    })
+
+    if (!user) {
+      return res
+        .status(401)
+        .json(new ApiResponse(false, 401, null, 'Invalid Access Token'))
+    }
+
+    res.status(200).json(new ApiResponse(true, 200, user, 'User authenticated'))
+  } catch (error) {
+    return res
+      .status(401)
+      .json(new ApiResponse(false, 401, null, 'Invalid access token'))
+  }
 }
 
 export const getUserById = async (req, res) => {
