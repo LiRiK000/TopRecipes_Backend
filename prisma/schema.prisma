@@ -12,6 +12,18 @@ model User {
   username  String
   email String  @unique
   password String
+  recipes Recipe[]
+  created_at DateTime  @default(now())
+  updated_at DateTime @updatedAt
+}
+
+model Recipe {
+  id String @id @default(uuid())
+  creator User @relation(fields: [creatorId], references: [id])
+  creatorId String
+  title String
+  ingredients String? @default("")
+  desc String
   created_at DateTime  @default(now())
   updated_at DateTime @updatedAt
 }
